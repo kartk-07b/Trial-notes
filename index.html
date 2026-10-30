@@ -1,0 +1,285 @@
+
+<!DOCTYPE html>
+< lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101114">
+<title>My Future Notes</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#101114;--card:#1d1e25;--text:#fff;--muted:#999;--accent:#9b83ff;--border:#30313a}
+body.light{--bg:#f4f3f9;--card:#fff;--text:#222;--muted:#777;--border:#e5e3ed}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;padding-bottom:90px}
+header{padding:24px 19px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:23px;font-weight:bold}.logo span{color:var(--accent)}
+.sub{font-size:12px;color:var(--muted);margin-top:5px}
+button{cursor:pointer}
+.theme{background:var(--card);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:12px}
+main{max-width:650px;margin:auto;padding:0 17px}
+.hero{padding:24px;border-radius:21px;background:linear-gradient(130deg,#5946a5,#a17df6);color:white;margin-bottom:20px}
+.hero small{opacity:.8}.hero h2{margin:12px 0 8px}.hero p{font-size:13px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}
+.stat{background:var(--card);padding:17px;border:1px solid var(--border);border-radius:16px}
+.stat small{color:var(--muted)}.stat strong{display:block;font-size:25px;margin-top:8px}
+.search,.field{width:100%;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--card);color:var(--text);font-size:14px;outline:none}
+.heading{display:flex;justify-content:space-between;align-items:center;margin:22px 0 13px}
+.heading small{color:var(--muted)}
+.categories{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px}
+.cat{white-space:nowrap;padding:10px 14px;border-radius:22px;border:1px solid var(--border);background:var(--card);color:var(--muted)}
+.cat.active{background:var(--accent);color:white}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.note{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:15px;min-height:135px;overflow-wrap:anywhere}
+.note h4{margin:10px 0;font-size:15px}
+.note p{color:var(--muted);font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.note small{color:var(--accent)}
+.note time{font-size:10px;color:var(--muted)}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:35px 5px}
+.fab{position:fixed;right:22px;bottom:23px;width:60px;height:60px;border:0;border-radius:19px;background:var(--accent);color:white;font-size:30px}
+.overlay{display:none;position:fixed;inset:0;background:#000b;z-index:5;align-items:flex-end;justify-content:center}
+.overlay.show{display:flex}
+.editor{width:100%;max-width:650px;max-height:92vh;overflow:auto;background:var(--bg);padding:22px 18px 30px;border-radius:23px 23px 0 0}
+.editor h3{margin-top:0}
+.field{margin-bottom:12px}
+textarea.field{height:210px;resize:vertical;line-height:1.5}
+.options{display:flex;gap:20px;margin:5px 0 18px;font-size:13px}
+.actions{display:flex;gap:9px;flex-wrap:wrap}
+.btn{padding:13px 17px;border:0;border-radius:11px;background:var(--accent);color:white;font-weight:bold}
+.secondary{background:var(--card);color:var(--text)}
+.danger{background:#b83c50}
+footer{text-align:center;color:var(--muted);font-size:11px;margin:35px 0}
+@media(max-width:340px){.notes{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+ <div>
+  <div class="logo">My Future <span>Notes.</span></div>
+  <div class="sub">Your ideas. Your plans. Your future.</div>
+ </div>
+ <button class="theme" onclick="toggleTheme()">☀ / ☾</button>
+</header>
+
+<main>
+ <section class="hero">
+  <small>✦ YOUR PERSONAL SPACE</small>
+  <h2>Think it. Write it. Achieve it.</h2>
+  <p>Keep your plans, dreams and important ideas in one place.</p>
+ </section>
+
+ <section class="stats">
+  <div class="stat"><small>📝 TOTAL NOTES</small><strong id="total">0</strong></div>
+  <div class="stat"><small>⭐ FAVORITES</small><strong id="favorites">0</strong></div>
+ </section>
+
+ <input class="search" id="search" placeholder="🔍 Search your notes..." oninput="render()">
+
+ <div class="heading"><b>Categories</b><small>Explore notes</small></div>
+ <div class="categories" id="categories"></div>
+
+ <div class="heading"><b id="listTitle">All Notes</b><small>Tap to edit</small></div>
+ <section class="notes" id="notes"></section>
+
+ <footer>MY FUTURE NOTES · YOUR PERSONAL NOTEBOOK</footer>
+</main>
+
+<button class="fab" onclick="openEditor()">+</button>
+
+<div class="overlay" id="overlay">
+ <div class="editor">
+  <h3 id="editorTitle">Create New Note</h3>
+  <input id="noteTitle" class="field" placeholder="Note title...">
+
+  <select id="noteCategory" class="field">
+   <option>Personal</option>
+   <option>Future Plans</option>
+   <option>Goals</option>
+   <option>AI Prompts</option>
+   <option>Ideas</option>
+   <option>Projects</option>
+   <option>Important</option>
+  </select>
+
+  <textarea id="noteContent" class="field" placeholder="Write your thoughts, plans and ideas here..."></textarea>
+
+  <div class="options">
+   <label><input type="checkbox" id="notePin"> 📌 Pin</label>
+   <label><input type="checkbox" id="noteFav"> ⭐ Favorite</label>
+  </div>
+
+  <div class="actions">
+   <button class="btn" onclick="saveNote()">Save Note</button>
+   <button class="btn secondary" onclick="closeEditor()">Cancel</button>
+   <button class="btn danger" id="deleteBtn" onclick="deleteNote()" style="display:none">Delete</button>
+  </div>
+ </div>
+</div>
+
+<script>
+const KEY="myFutureNotes_v1";
+let notes=[];
+let currentId=null;
+let activeCategory="All";
+
+try{
+ notes=JSON.parse(localStorage.getItem(KEY)||"[]");
+ if(!Array.isArray(notes))notes=[];
+}catch(e){notes=[];}
+
+const categories=["All","Personal","Future Plans","Goals","AI Prompts","Ideas","Projects","Important","Favorites"];
+
+function store(){
+ try{
+  localStorage.setItem(KEY,JSON.stringify(notes));
+ }catch(e){
+  alert("Storage error. Please check available phone storage.");
+ }
+}
+
+function escapeHTML(s){
+ return String(s).replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ })[c]);
+}
+
+function render(){
+ document.getElementById("total").textContent=notes.length;
+ document.getElementById("favorites").textContent=notes.filter(n=>n.fav).length;
+
+ document.getElementById("categories").innerHTML=categories.map(c=>
+ `<button class="cat ${activeCategory===c?'active':''}" onclick="selectCategory('${c}')">${c}</button>`
+ ).join("");
+
+ document.getElementById("listTitle").textContent=activeCategory;
+
+ const q=document.getElementById("search").value.toLowerCase();
+
+ let filtered=notes.filter(n=>{
+  let categoryMatch=activeCategory==="All"||
+   (activeCategory==="Favorites"?n.fav:n.category===activeCategory);
+  let searchMatch=n.title.toLowerCase().includes(q)||n.content.toLowerCase().includes(q);
+  return categoryMatch&&searchMatch;
+ });
+
+ filtered.sort((a,b)=>Number(b.pin)-Number(a.pin)||b.updated-a.updated);
+
+ const container=document.getElementById("notes");
+
+ if(!filtered.length){
+  container.innerHTML='<div class="empty">📝<br><br>No notes found.<br>Create your first note using +</div>';
+  return;
+ }
+
+ container.innerHTML=filtered.map(n=>`
+ <article class="note" onclick="editNote('${n.id}')">
+  <small>${n.pin?"📌 ":""}${n.fav?"⭐ ":""}${escapeHTML(n.category)}</small>
+  <h4>${escapeHTML(n.title||"Untitled note")}</h4>
+  <p>${escapeHTML(n.content.slice(0,110))}${n.content.length>110?"...":""}</p>
+  <time>${new Date(n.updated).toLocaleDateString()}</time>
+ </article>`).join("");
+}
+
+function selectCategory(c){
+ activeCategory=c;
+ render();
+}
+
+function openEditor(){
+ currentId=null;
+ document.getElementById("editorTitle").textContent="Create New Note";
+ document.getElementById("noteTitle").value="";
+ document.getElementById("noteContent").value="";
+ document.getElementById("noteCategory").value="Personal";
+ document.getElementById("notePin").checked=false;
+ document.getElementById("noteFav").checked=false;
+ document.getElementById("deleteBtn").style.display="none";
+ document.getElementById("overlay").classList.add("show");
+}
+
+function editNote(id){
+ const n=notes.find(x=>x.id===id);
+ if(!n)return;
+ currentId=id;
+ document.getElementById("editorTitle").textContent="Edit Note";
+ document.getElementById("noteTitle").value=n.title;
+ document.getElementById("noteContent").value=n.content;
+ document.getElementById("noteCategory").value=n.category;
+ document.getElementById("notePin").checked=n.pin;
+ document.getElementById("noteFav").checked=n.fav;
+ document.getElementById("deleteBtn").style.display="inline-block";
+ document.getElementById("overlay").classList.add("show");
+}
+
+function closeEditor(){
+ document.getElementById("overlay").classList.remove("show");
+}
+
+function saveNote(){
+ const title=document.getElementById("noteTitle").value.trim();
+ const content=document.getElementById("noteContent").value.trim();
+
+ if(!title&&!content){
+  alert("Please write a title or note first.");
+  return;
+ }
+
+ const data={
+  id:currentId||String(Date.now())+Math.random().toString(16).slice(2),
+  title:title||"Untitled note",
+  content,
+  category:document.getElementById("noteCategory").value,
+  pin:document.getElementById("notePin").checked,
+  fav:document.getElementById("noteFav").checked,
+  updated:Date.now()
+ };
+
+ if(currentId){
+  const index=notes.findIndex(n=>n.id===currentId);
+  if(index!==-1)notes[index]=data;
+ }else{
+  notes.push(data);
+ }
+
+ store();
+ closeEditor();
+ render();
+}
+
+function deleteNote(){
+ if(!currentId)return;
+ if(!confirm("Delete this note permanently?"))return;
+ notes=notes.filter(n=>n.id!==currentId);
+ store();
+ closeEditor();
+ render();
+}
+
+function toggleTheme(){
+ document.body.classList.toggle("light");
+ try{
+  localStorage.setItem("myFutureTheme",document.body.classList.contains("light")?"light":"dark");
+ }catch(e){}
+}
+
+try{
+ if(localStorage.getItem("myFutureTheme")==="light"){
+  document.body.classList.add("light");
+ }
+}catch(e){}
+
+render();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .then(() => console.log("Offline support activated!"))
+      .catch(error => console.error("Service worker error:", error));
+  });
+}
+</script>
+
+</body>
+</html>
