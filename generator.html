@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOTE Icon Generator</title>
+<style>
+  body { background: #101114; color: #fff; font-family: Arial, sans-serif; text-align: center; padding: 30px; }
+  button { background: #9b83ff; color: white; border: none; padding: 15px 25px; font-size: 16px; border-radius: 12px; margin: 10px; cursor: pointer; font-weight: bold; }
+  canvas { display: none; }
+  .preview { margin: 20px auto; width: 120px; height: 120px; border-radius: 24px; background: linear-gradient(130deg,#5946a5,#a17df6); display: flex; align-items: center; justify-content: center; font-size: 60px; font-weight: bold; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+</style>
+</head>
+<body>
+
+  <h2>NOTE Icon Creator</h2>
+  <p>Tap the buttons below to generate and download your app icons directly to your phone!</p>
+  
+  <div class="preview">N</div>
+
+  <div>
+    <button onclick="downloadIcon(192, 'icon-192.png')">Download icon-192.png</button>
+  </div>
+  <div>
+    <button onclick="downloadIcon(512, 'icon-512.png')">Download icon-512.png</button>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+<script>
+function downloadIcon(size, filename) {
+  const canvas = document.getElementById('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  // Background gradient matching your app theme
+  const gradient = ctx.createLinearGradient(0, 0, size, size);
+  gradient.addColorStop(0, '#5946a5');
+  gradient.addColorStop(1, '#a17df6');
+  ctx.fillStyle = gradient;
+  
+  // Rounded rectangle for modern app icon look
+  const radius = size * 0.22;
+  ctx.beginPath();
+  ctx.roundRect(0, 0, size, size, radius);
+  ctx.fill();
+
+  // Draw the letter "N" in the center
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `bold ${size * 0.55}px Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('N', size / 2, size / 2 + (size * 0.03));
+
+  // Trigger download
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+</script>
+
+</body>
+</html>
